@@ -63,10 +63,6 @@ This project is a Node.js application that integrates Telegram with WhatsApp usi
 
 Contributions are welcome! Please open an issue or submit a pull request for any improvements or bug fixes.
 
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
 ## Acknowledgements
 
 - [node-telegram-bot-api](https://github.com/yagop/node-telegram-bot-api)
