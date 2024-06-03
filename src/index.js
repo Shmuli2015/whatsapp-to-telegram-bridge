@@ -1,41 +1,40 @@
 require("dotenv").config();
+const express = require("express");
 const TelegramBot = require("node-telegram-bot-api");
 const {
   handleStartCommand,
-  handleGroupSelection,
   handleChannelIdSetting,
   handleStopCommand,
+  handleCallback,
 } = require("./services/commands");
-const {
-  initializeWhatsApp,
-  assignUseSenderDetails,
-} = require("./services/whatsapp");
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
-let selectedGroups = [];
 
-bot.onText(/\/start/, (msg) => handleStartCommand(bot, msg));
-bot.onText(/^\-?\d+$/, (msg) => handleChannelIdSetting(bot, msg));
-bot.onText(/\/stop/, (msg) => handleStopCommand(bot, msg));
+bot.onText(/\/start/, (msg) => {
+  console.log("Received /start command");
+  handleStartCommand(bot, msg);
+});
+
+bot.onText(/^\-?\d+$/, (msg) => {
+  console.log("Received channel ID:", msg.text);
+  handleChannelIdSetting(bot, msg);
+});
+
+bot.onText(/\/stop/, (msg) => {
+  console.log("Received /stop command");
+  handleStopCommand(bot, msg);
+});
 
 bot.on("callback_query", (query) => {
-  const chatId = query.message.chat.id;
-  const data = query.data;
+  console.log("Received callback query:", query.data);
+  handleCallback(bot, query);
+});
 
-  if (data === "get_qr") {
-    initializeWhatsApp(chatId, bot);
-  } else if (data.startsWith("group_")) {
-    const groupId = data.replace("group_", "");
-    if (selectedGroups.includes(groupId)) {
-      selectedGroups = selectedGroups.filter((group) => group !== groupId);
-    } else {
-      selectedGroups.push(groupId);
-    }
-  } else if (data === "done") {
-    handleGroupSelection(bot, selectedGroups, chatId);
-  } else if (data.startsWith("include_sender_")) {
-    assignUseSenderDetails(data === "include_sender_yes");
-    bot.sendMessage(chatId, "Thank you for using our services");
-  }
+// Create Express server
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
